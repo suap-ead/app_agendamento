@@ -1,0 +1,77 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'agendamento:index' %}">{{title}}</a>
+        {% if user.is_staff %}
+        › <a href="{% url 'admin:index' %}">Admin</a>
+        › <a href="{% url 'admin:app_list' 'agendamento' %}">Agendamento</a>
+        › <a href="{% url 'admin:agendamento_solicitacao_changelist' %}">Solicitações</a>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+<style>
+    .status {margin-top: 1em;padding: 5px;}
+    .status.Solicitado {background: #f9f9c7;}
+    .status.Deferido {background: #d2f9c7;}
+    .status.Indeferido {background: #f9c7c7;}
+    .status.Cancelado {background: #ffe3c5;}
+    .btn {
+        background: #417690;
+        color: #fff !important;
+        padding: 4px 12px;
+        border-radius: 15px;
+    }
+    .cancelar {
+        background-color: brown;
+    }
+    .infor {
+        margin: 3em;
+        color: #fff !important;
+        padding: 1rem !important;
+        margin-bottom: .5rem !important;
+        background-color: #17a2b8 !important;
+        border-radius: 15px;
+        text-align: center;
+    }
+</style>
+{% endblock extrahead %}
+
+
+{% block content %}
+    <p>Olá <b>{{user.name}}</b>!</p>
+    <h2>Suas solicitações de agendamento</h2>
+    {% if solicitacoes.exists %}
+        <ol style="list-style: none; padding: 0;">
+        {% for solicitacao in solicitacoes %}
+            <li class="status {{solicitacao.status}}">
+                <h3>{{ solicitacao.agenda }}</h3>
+                {% if solicitacao.status == solicitacao.Status.SOLICITADO %}
+                Seu agendamento para <i>{{solicitacao.inicio}}</i> ainda <b>aguarda confirmação</b>, ou seja, ainda não adianta comparecer ao local marcado.
+                <br> <a href="{% url 'agendamento:solicitacao_cancelar' solicitacao.id %}" class="btn cancelar">Cancelar</a>
+                {% endif%}
+                {% if solicitacao.status == solicitacao.Status.DEFERIDO %}
+                Comparecer em <b>{{solicitacao.inicio}}</b> na sede do Campus. O atendimento deverá durar até {{solicitacao.agenda.janela}} minutos.
+                <br> <a href="{% url 'agendamento:solicitacao_cancelar' solicitacao.id %}" class="btn cancelar">Cancelar</a>
+                {% endif%}
+                {% if solicitacao.status == solicitacao.Status.INDEFERIDO %}
+                Seu agendamento para <i>{{solicitacao.inicio}}</i> <b>foi NEGADO</b>, ou seja, não compareça ao local marcado nesta data.
+                {% endif%}
+                {% if solicitacao.status == solicitacao.Status.CANCELADO %}
+                Seu agendamento para <i>{{solicitacao.inicio}}</i> <b>foi CANCELADO</b>, ou seja, não compareça ao local marcado nesta data.
+                {% endif%}
+                <br><br><i>{{solicitacao.agenda.informacao|linebreaks}}</i>
+            </li>
+        {% endfor %}
+        </ol>
+    {% else %}
+        <ul>
+            <li>Você não tem solicitações de agendamento.</li>            
+        </ul>
+    {% endif %}
+    <p><a class="btn" href="{% url 'agendamento:agenda_selecionar' %}">Nova solicitação de agendamento</a></p>
+    <p class="infor">Você deve voltar a esta página sempre que você quiser verificar o andamento da solicitação ou fazer novas solicitações.</p>
+{% endblock content %} 

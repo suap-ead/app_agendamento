@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'agendamento:index' %}">Início</a>
+        › <a href="{% url 'agendamento:agenda_selecionar' %}">Agendas</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<style>
+.btn {
+    background: #417690;
+    color: #fff !important;
+    padding: 4px 12px;
+    border-radius: 50px;
+}
+</style>
+    {% if agendas.exists %}
+        <table class="table" width="100%">
+            <thead>
+                <tr>
+                    <th>Agenda</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agenda in agendas %}
+                <tr>
+                    <td>{{agenda.nome}}</td>
+                    <td style="text-align: right;">
+                        {{solicitacao_futura}}
+                        {% if solicitacao_futura %}
+                        Agendado para {{solicitacao_futura.inicio}}, duração de {{agenda.janela}} minutos.
+                        {% else %}
+                        <a class="btn" href="{% url 'agendamento:agenda_ver' agenda.id %}">Agendar</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Não existe agenda aberta no momento.</p>
+    {% endif %}
+{% endblock content %}
