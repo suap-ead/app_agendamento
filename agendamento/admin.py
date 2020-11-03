@@ -3,8 +3,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.contrib.admin import register, ModelAdmin, TabularInline, StackedInline
 from import_export.admin import ImportExportModelAdmin
-from .models import Agenda, Vaga, Solicitacao
 from .models import Campus, Diretoria, Curso, Turma
+from .models import Agenda, Vaga, Solicitacao, Autorizacao
 
 
 @register(Campus)
@@ -40,12 +40,17 @@ class VagaInline(TabularInline):
     extra = 0
 
 
+class AutorizacaoInline(TabularInline):
+    model = Autorizacao
+    extra = 0
+
+
 @register(Agenda)
 class AgendaAdmin(ImportExportModelAdmin):
     list_display = ['nome', 'quando', 'restricoes', 'is_active']
     search_fields = ['nome']
     date_hierarchy = 'inicio'
-    inlines = [VagaInline]
+    inlines = [VagaInline, AutorizacaoInline ]
     autocomplete_fields = ['restrito_aos_campi', 'restrito_aas_diretorias', 'restrito_aos_cursos', 'restrito_aas_turmas']
 
     def is_active(self, instance):

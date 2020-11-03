@@ -8,7 +8,7 @@ from django.db.models import Model, TextChoices
 from django.db.models import DateField, BooleanField, NullBooleanField, DateTimeField, TextField, TimeField, PositiveIntegerField
 from django.db.models import ImageField, ManyToManyField, URLField
 from django.dispatch import receiver
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.db.models import Model, CharField, EmailField, BooleanField, DateTimeField, ForeignKey, CASCADE
 from django.db.models import ForeignKey, CASCADE
 from suap_ead.fields import StringField, NullStringField, nullable, nullable_phone, FK, NullFK
@@ -193,6 +193,22 @@ class Vaga(Model):
 
     def __str__(self):
         return f"Até {self.atendimentos} atendimentos no dia {self.dia}, das {self.inicio} às {self.fim}"
+
+
+class Autorizacao(Model):
+    agenda = FK(_('Agenda'), Agenda)
+    grupo = FK(_('Papel'), Group)
+    user = FK(_('Usuário'), get_user_model())
+    active = BooleanField('Ativo')
+
+    class Meta:
+        verbose_name = _("Autorização")
+        verbose_name_plural = _("Autorizações")
+        ordering = ['active', 'grupo', 'user']
+        unique_together = [['agenda', 'user']]
+
+    def __str__(self):
+        return f"O usuário {self.user} na agenda {self.agenda} tem o papel {self.grupo}"
 
 
 

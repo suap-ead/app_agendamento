@@ -13,10 +13,11 @@ Permite realizar agendamentos dentro de uma agenda previamente definida.
 - [x] SSO com SUAP
 - [x] Agenda
   - [x] Vaga
-  - [ ] Papéis
+  - [x] Papéis
     - [ ] Donos da agenda
     - [ ] Avaliadores da agenda
     - [ ] Indicar se quer ou não receber notificações por email
+    - [ ] Permissões do papel
   - [x] Restrições
     - [x] Curso
     - [x] Diretorias
@@ -35,7 +36,7 @@ Permite realizar agendamentos dentro de uma agenda previamente definida.
 - [x] SSO com SUAP
 - [x] Listar minhas solicitações
   - [x] Acompanhar o status da solicitação
-  - [ ] Cancelar uma solicitação
+  - [x] Cancelar uma solicitação
 - [x] Criar nova solicitação
   - [x] Validar se pode ou não fazer a solicitação, não podendo se:
     - [x] Tem agendamento deferido ou pendente futuro
