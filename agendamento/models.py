@@ -1,11 +1,12 @@
 import calendar
 from datetime import datetime, date, time, timedelta
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django.utils.timezone import now, localtime, make_aware
 from django.db.models import Model, TextChoices
 from django.db.models import DateField, BooleanField, NullBooleanField, DateTimeField, TextField, TimeField, PositiveIntegerField
-from django.db.models import ImageField
+from django.db.models import ImageField, ManyToManyField, URLField
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.db.models import Model, CharField, EmailField, BooleanField, DateTimeField, ForeignKey, CASCADE
@@ -18,12 +19,90 @@ from datetimerange import DateTimeRange
 from django.forms.models import model_to_dict
 
 
+class Campus(Model):
+    suap_id = StringField('ID no SUAP', unique=True)
+    sigla = StringField('Sigla', unique=True)
+    descricao = StringField('Descrição')
+    url = URLField('URL', max_length=255, **nullable)
+    active = BooleanField('Ativo')
+
+    class Meta:
+        verbose_name = "Campus"
+        verbose_name_plural = "Campi"
+        ordering = ['sigla']
+
+    def __str__(self):
+        return f'{self.sigla}'
+
+class Diretoria(Model):
+    campus = FK(_('Campus'), Campus)
+    sigla = StringField('Sigla', unique=True)
+    descricao = StringField(_('Descrição'))
+    active = BooleanField('Ativo')
+
+    class Meta:
+        verbose_name = "Diretoria"
+        verbose_name_plural = "Diretorias"
+        ordering = ['sigla']
+
+    def __str__(self):
+        return f'{self.sigla}/{self.campus.sigla}'
+
+class Curso(Model):
+    diretoria = FK(_('Diretoria'), Diretoria)
+    codigo = StringField('Código', unique=True)
+    nome = StringField('Nome')
+    descricao = StringField('Descrição')
+    active = BooleanField('Ativo')
+
+    class Meta:
+        verbose_name = "Curso"
+        verbose_name_plural = "Cursos"
+        ordering = ['nome']
+
+    def __str__(self):
+        return f'{self.codigo} - {self.nome}'
+
+
+class Turma(Model):
+    curso = FK(_('Curso'), Curso)
+    codigo = StringField('Código', unique=True)
+    active = BooleanField('Ativo')
+
+    class Meta:
+        verbose_name = "Turma"
+        verbose_name_plural = "Turmas"
+        ordering = ['codigo']
+
+    def __str__(self):
+        return f'{self.codigo}'
+
+    def save(self, *args, **kwargs):
+        parts = self.codigo.split(".")
+        if len(parts) != 4:
+            raise ValidationError(
+                "O código do curso está errado, deve ser:"
+                " 'AAAAO.P.CCCCCC.TT'. AAAA=Ano, O=Perído de oferta,"
+                " P=Periodo do curso, CCCCCC=Código do curso, TT=Turma")
+        codigo_curso = parts[2]
+        if codigo_curso != self.curso.codigo:
+            raise ValidationError(
+                f"O código do curso está errado é {self.curso.codigo},"
+                f" mas você informou no código da turma é que o código curos é {codigo_curso}.")
+
+        super().save(*args, **kwargs)
+
+
 class Agenda(Model):
     nome = StringField(_('Nome da agenda'))
     janela = PositiveIntegerField(_("Janela de atendimento (min)"), help_text=_("Alterar a janela depois de já ter solicitações não muda a tempo da reserva da solicitação"))
     inicio = DateField(_('Início'), help_text=_("Esta agenda começa que dia? Alterar a data de início da agenda não altera as solicitações"))
     fim = DateField(_('Fim'), help_text=_("Esta agenda termina que dia. Alterar a data de fim da agenda não altera as solicitações"))
     informacao = TextField(_('Informações aos solicitantes'), **nullable)
+    restrito_aos_campi = ManyToManyField(Campus, verbose_name='Restrito aos campi', blank=True)
+    restrito_aas_diretorias = ManyToManyField(Diretoria, verbose_name='Restrito às diretorias', blank=True)
+    restrito_aos_cursos = ManyToManyField(Curso, verbose_name='Restrito aos cursos', blank=True)
+    restrito_aas_turmas = ManyToManyField(Turma, verbose_name='Restrito às turmas', blank=True)
 
     class Meta:
         verbose_name = _("Agenda")
