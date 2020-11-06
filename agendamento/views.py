@@ -56,7 +56,7 @@ def agenda_ver(request, id):
 
     if request.method == 'POST':
         form = SolicitacaoForm(agenda, request.user, request.POST)
-        inicio = datetime.fromisoformat('2020-10-30T13:00:00')
+        inicio = datetime.fromisoformat(form.data['inicio'])
         Solicitacao.objects.create(agenda=agenda, solicitante=request.user, inicio=inicio, fim=inicio + timedelta(minutes=agenda.janela))
         return redirect("agendamento:index")
     else:
