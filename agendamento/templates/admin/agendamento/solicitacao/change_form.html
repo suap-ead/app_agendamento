@@ -1,0 +1,60 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+{% load agendamento %}
+
+{% block field_sets %}
+{% if add %}
+  {% for fieldset in adminform %}
+    {% include "admin/includes/fieldset.html" %}
+  {% endfor %}
+{% else %}
+  <fieldset class="module aligned {{ fieldset.classes }}">
+    <div class="form-row field-solicitante">
+      <div><label>Soliciante:</label><div class="readonly">{% firstof original.solicitante.social_name original.solicitante.name %} ({{original.solicitante.campus}}) ({{original.solicitante.username}})</div></div>
+    </div>
+    <div class="form-row field-solicitante">
+      <div><label>Campus:</label><div class="readonly">{{original.solicitante.campus}}</div></div>
+    </div>
+    {% if is_student %}
+      <!-- <div class="form-row field-student-ingresso">
+        <div><label>Ingresso:</label><div class="readonly">{{student.ano_ingresso}}.{{student.periodo_ingresso}}</div></div>
+      </div> -->
+      <div class="form-row field-student-curso">
+        <div><label>Curso:</label><div class="readonly">{% if student.curso %}{{student.curso}}{% else %}{{student.codigo_curso}}{% endif %}</div></div>
+      </div>
+      {% if student.curso.diretoria %}
+      <div class="form-row field-student-curso">
+        <div><label>Diretoria:</label><div class="readonly">{{student.curso.diretoria}}</div></div>
+      </div>
+      {% endif %}
+    {% endif %}
+    <div class="form-row field-status">
+      <div>
+        <label class="required" for="id_status">Status:</label>
+        <select name="status" id="id_status">
+          <option value="Deferido" {% if original.status == 'Deferido' %}selected{% endif %}>Deferido</option>
+          <option value="Indeferido" {% if original.status == 'Indeferido' %}selected{% endif %}>Indeferido</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row field-criterios">
+      <div>
+        <label class="required" for="id_criterios">Critérios:</label>
+        <ul>
+          {% for criterio in criterios %}
+            <li> {% criterio_avaliado original criterio %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="form-row field-justificativa">
+      <div>
+        <label class="required" for="id_justificativa">Justificativa:</label>
+        <textarea name="justificativa" cols="40" rows="10" class="vLargeTextField" id="id_justificativa" required>{{original.justificativa}}</textarea>
+        {{ form.justificativa.errors }}
+        <div class="help">Sempre preencha este campo.</div>
+      </div>
+    </div>
+  </fieldset>
+{% endif %}
+{% endblock %}

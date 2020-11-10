@@ -58,12 +58,20 @@
                 <br> <a href="{% url 'agendamento:solicitacao_cancelar' solicitacao.id %}" class="btn cancelar">Cancelar</a>
                 {% endif%}
                 {% if solicitacao.status == solicitacao.Status.INDEFERIDO %}
-                Seu agendamento para <i>{{solicitacao.inicio}}</i> <b>foi NEGADO</b>, ou seja, não compareça ao local marcado nesta data.
-                {% endif%}
+                    Seu agendamento para <i>{{solicitacao.inicio}}</i> <b>foi NEGADO</b>, ou seja, não compareça ao local marcado nesta data.
+                    <br><br><b>Motivo:</b><br>
+                    {{solicitacao.justificativa}}
+                    {% if solicitacao.criterioavaliado_set %}
+                    <br><br><b>Critérios avaliados:</b><br>
+                    {% for criterio in solicitacao.criterioavaliado_set.all %}
+                        <div>{{criterio}}: {% if criterio.confere %}Sim{%else%}Não{%endif%}</div>
+                    {% endfor  %}
+                    {% endif %}
+                {% endif %}
                 {% if solicitacao.status == solicitacao.Status.CANCELADO %}
                 Seu agendamento para <i>{{solicitacao.inicio}}</i> <b>foi CANCELADO</b>, ou seja, não compareça ao local marcado nesta data.
                 {% endif%}
-                <br><br><i>{{solicitacao.agenda.informacao|linebreaks}}</i>
+                <br><br><b>Informações relevantes desta agenda:</b><br><i>{{solicitacao.agenda.informacao|linebreaks}}</i>
             </li>
         {% endfor %}
         </ol>

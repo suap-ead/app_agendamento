@@ -19,6 +19,18 @@ from datetimerange import DateTimeRange
 from django.forms.models import model_to_dict
 
 
+class TipoVinculo(Model):
+    descricao = StringField('Descrição')
+
+    class Meta:
+        verbose_name = _("Vínculo")
+        verbose_name_plural = _("Vínculos")
+        ordering = ['descricao']
+
+    def __str__(self):
+        return f'{self.descricao}'
+
+
 class Campus(Model):
     suap_id = StringField('ID no SUAP', unique=True)
     sigla = StringField('Sigla', unique=True)
@@ -34,9 +46,10 @@ class Campus(Model):
     def __str__(self):
         return f'{self.sigla}'
 
+
 class Diretoria(Model):
     campus = FK(_('Campus'), Campus)
-    sigla = StringField('Sigla', unique=True)
+    sigla = StringField('Sigla')
     descricao = StringField(_('Descrição'))
     active = BooleanField('Ativo')
 
@@ -44,9 +57,11 @@ class Diretoria(Model):
         verbose_name = "Diretoria"
         verbose_name_plural = "Diretorias"
         ordering = ['sigla']
+        unique_together = [['campus', 'sigla'], ]
 
     def __str__(self):
         return f'{self.sigla}/{self.campus.sigla}'
+
 
 class Curso(Model):
     diretoria = FK(_('Diretoria'), Diretoria)
@@ -93,6 +108,18 @@ class Turma(Model):
         super().save(*args, **kwargs)
 
 
+class Criterio(Model):
+    titulo = StringField(_("Título"))
+
+    class Meta:
+        verbose_name = _("Critério")
+        verbose_name_plural = _("Critérios")
+        ordering = ['titulo']
+
+    def __str__(self):
+        return f'{self.titulo}'
+
+
 class Agenda(Model):
     nome = StringField(_('Nome da agenda'))
     janela = PositiveIntegerField(_("Janela de atendimento (min)"), help_text=_("Alterar a janela depois de já ter solicitações não muda a tempo da reserva da solicitação"))
@@ -103,6 +130,7 @@ class Agenda(Model):
     restrito_aas_diretorias = ManyToManyField(Diretoria, verbose_name='Restrito às diretorias', blank=True)
     restrito_aos_cursos = ManyToManyField(Curso, verbose_name='Restrito aos cursos', blank=True)
     restrito_aas_turmas = ManyToManyField(Turma, verbose_name='Restrito às turmas', blank=True)
+    restrito_aos_vinculos = ManyToManyField(TipoVinculo, verbose_name='Restrito às vínculos', blank=True)
 
     class Meta:
         verbose_name = _("Agenda")
@@ -136,6 +164,17 @@ class Agenda(Model):
                 for vaga in vagas[d.weekday()]:
                     result.append({ "dia": d, "vaga": vaga })
         return result
+
+    @property
+    def condicao(self):
+        hoje = date.today()
+        if hoje >= self.inicio and hoje <= self.fim:
+            return _("Em andamento")
+        if self.fim > hoje:
+            return _("Encerrado")
+        return _("Planejado")
+    condicao.fget.short_description = _("Condição")
+    
 
     def solicitacao_futura(self, solicitante):
         return Solicitacao.objects.filter(
@@ -211,6 +250,21 @@ class Autorizacao(Model):
         return f"O usuário {self.user} na agenda {self.agenda} tem o papel {self.grupo}"
 
 
+class AgendaCriterio(Model):
+    agenda = FK(_("Agenda"), Agenda)
+    criterio = FK(_("Critério"), Criterio)
+    active = BooleanField(_("Ativo"))
+
+
+    class Meta:
+        verbose_name = _("Critério da agenda")
+        verbose_name_plural = _("Critérios das agendas")
+        ordering = ['criterio__titulo']
+        unique_together = [['agenda', 'criterio']]
+
+    def __str__(self):
+        return f'{self.criterio}'
+
 
 class Solicitacao(Model):
     class Status(TextChoices):
@@ -228,6 +282,7 @@ class Solicitacao(Model):
     status = StringField(_('Status'), choices=Status.choices, default=Status.SOLICITADO)
     avaliador = NullFK('Avaliador', get_user_model(), related_name="avaliadores")
     justificativa = TextField(_('Justificativa'), **nullable)
+    avaliado_em = DateTimeField(_("Avaliado em"), **nullable)
 
 
     class Meta:
@@ -240,6 +295,9 @@ class Solicitacao(Model):
         return f"De {self.inicio} às {self.fim}, horário reservado para {self.solicitante}. {self.status}" + avaliado_por
 
     def save(self, *args, **kwargs):
+        print("AASDF", self.status, self.status == Solicitacao.Status.INDEFERIDO, self.justificativa == '')
+        if self.status == Solicitacao.Status.INDEFERIDO and self.justificativa == '':
+            raise ValidationError("A justificativa deve ser informada sempre que houver um indeferimento.")
         super().save(*args, **kwargs)
         agora = localtime(now()).strftime('%d/%m/%Y às %H:%M')
         inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
@@ -268,10 +326,29 @@ class Solicitacao(Model):
                                 ' Se não foi feito por você, favor realizar outro agendamento.'),
                 },
             }
-            send_mail(
-                messages[self.status][SUBJECT],
-                messages[self.status][TEMPLATE].format(agora=agora, inicio=inicio, justificativa=self.justificativa),
-                None,
-                [self.solicitante.email],
-                fail_silently=True,
-            )
+            # send_mail(
+            #     messages[self.status][SUBJECT],
+            #     messages[self.status][TEMPLATE].format(agora=agora, inicio=inicio, justificativa=self.justificativa),
+            #     None,
+            #     [self.solicitante.email],
+            #     fail_silently=True,
+            # )
+
+
+class CriterioAvaliado(Model):
+    solicitacao = FK(_("Solicitacao"), Solicitacao)
+    criterio = FK(_("Critério"), AgendaCriterio)
+    confere = BooleanField(_("Confere"))
+
+    class Meta:
+        verbose_name = _("Critério avaliado")
+        verbose_name_plural = _("Critérios avaliados")
+        ordering = ['criterio__criterio__titulo']
+
+    def __str__(self):
+        return f'{self.criterio}'
+
+    def save(self, *args, **kwargs):
+        if self.solicitacao.agenda_id != self.criterio.agenda_id:
+            raise ValidationError(_("Este critério não é da mesma agenda que esta solicitação"))
+        super().save(*args, **kwargs)
