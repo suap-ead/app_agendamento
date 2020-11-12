@@ -50,6 +50,13 @@ def solicitacao_cancelar(request, id):
     solicitacao.save(update_fields={"status"})
     return redirect("agendamento:index")
 
+
+@login_required
+def solicitacao_visualizar(request, id):
+    solicitacao = get_object_or_404(Solicitacao, id=id, solicitante=request.user)
+    return render(request, 'agendamento/solicitacao_visualizar.html', context=locals())
+
+
 @login_required
 def agenda_ver(request, id):
     agenda = get_object_or_404(Agenda, id=id)

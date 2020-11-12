@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Solicitação de agendamento{% endblock %}
+
+{% block extrahead %}
+<style>
+    .status {margin-top: 1em;padding: 5px;}
+    .status.Solicitado {background: #f9f9c7;}
+    .status.Deferido {background: #d2f9c7;}
+    .status.Indeferido {background: #f9c7c7;}
+    .status.Cancelado {background: #ffe3c5;}
+    .btn {
+        background: #417690;
+        color: #fff !important;
+        padding: 4px 12px;
+        border-radius: 15px;
+    }
+    .cancelar {
+        background-color: brown;
+    }
+    .infor {
+        margin: 3em;
+        color: #fff !important;
+        padding: 1rem !important;
+        margin-bottom: .5rem !important;
+        background-color: #17a2b8 !important;
+        border-radius: 15px;
+        text-align: center;
+    }
+</style>
+{% endblock extrahead %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'agendamento:index' %}">{{title}}</a>
+        {% if user.is_staff %}
+        › <a href="{% url 'admin:index' %}">Admin</a>
+        › <a href="{% url 'admin:app_list' 'agendamento' %}">Agendamento</a>
+        › <a href="{% url 'admin:agendamento_solicitacao_changelist' %}">Solicitações</a>
+        {% endif %}
+    </div>
+{% endblock %}

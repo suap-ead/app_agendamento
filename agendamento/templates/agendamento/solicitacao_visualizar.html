@@ -1,0 +1,47 @@
+{% extends "agendamento/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <p>Olá, você acessou como <b>{{user.name}} ({{user.username}})</b>, cujo email é o <b>{{user.email}}</b>.</p>
+
+    <h2><span class="status {{solicitacao.status}}" style="font-size: 80%;">{{solicitacao.status}}</span> Agenda: {{ solicitacao.agenda }}</h2>
+    
+    <dl style="padding: 10px;">
+        <dt>Agendado para</dt><dd>{{solicitacao.inicio}}</dd>
+        <dt>Situação</dt>
+        <dd><span class="status {{solicitacao.status}}">{{solicitacao.status}}:
+            {% if solicitacao.status == solicitacao.Status.SOLICITADO %}
+                Ainda <b>aguarda confirmação</b>, ou seja, ainda não adianta comparecer ao local marcado.
+            {% endif%}
+            {% if solicitacao.status == solicitacao.Status.DEFERIDO %}
+                Comparecer em 15min antes na sede do Campus. O atendimento deverá durar até {{solicitacao.agenda.janela}} minutos.
+            {% endif%}
+            {% if solicitacao.status == solicitacao.Status.INDEFERIDO %}
+                <b>Não adianta comparecer</b> ao local marcado nesta data.
+            {% endif %}
+            {% if solicitacao.status == solicitacao.Status.CANCELADO %}
+                Seu agendamento para <i>{{solicitacao.inicio}}</i> <b>foi CANCELADO</b>, ou seja, não compareça ao local marcado nesta data.
+            {% endif%}</span>
+        </dd>
+        {% if solicitacao.status == solicitacao.Status.INDEFERIDO %}
+            <dt>Motivo</dt><dd>{{solicitacao.justificativa}}</dd>
+            {% if solicitacao.criterioavaliado_set %}
+                <dt>Critérios avaliados</dt>
+                <ol>
+                    {% for criterio in solicitacao.criterioavaliado_set.all %}
+                        <li>{{criterio}}: {% if criterio.confere %}Sim{%else%}Não{%endif%}</li>
+                    {% endfor  %}
+                </ol>
+            {% endif %}
+        {% endif %}
+        <dt>Data</dt><dd>{{solicitacao.inicio}}</dd>
+        {% if solicitacao.status == solicitacao.Status.SOLICITADO or solicitacao.status == solicitacao.Status.INDEFERIDO %}
+            <br><div><a href="{% url 'agendamento:solicitacao_cancelar' solicitacao.id %}" class="btn cancelar">Cancelar esta solicitação</a></div>
+        {% endif%}
+        
+    </dl>
+    <div style="color: #fff !important; padding: 1rem !important; background: #17a2b8 !important; border-radius: 5px;">
+        <h2>Informações relevantes desta agenda:</h2>
+        {{solicitacao.agenda.informacao|linebreaks}}
+    </div>
+{% endblock content %} 

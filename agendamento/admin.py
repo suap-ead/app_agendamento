@@ -231,8 +231,10 @@ class Student(object):
 
 @register(Solicitacao)
 class SolicitacaoAdmin(ImportExportModelAdmin):
-    list_display = ['solicitante', 'inicio', 'fim', 'agenda', 'avaliador', 'status']
-    list_filter = ['status', 'agenda__nome']
+    list_display = ['inicio', 'status', 'agenda', 'solicitante', 'avaliador']
+    list_filter = [
+        'status', 'solicitante__tipo', 'solicitante__categoria', 'agenda__nome', 'solicitante__codigo_curso'
+    ]
     search_fields = ['solicitante', 'avaliador', 'status', 'justificativa']
     date_hierarchy = 'inicio'
     autocomplete_fields = ['agenda', 'solicitante']
