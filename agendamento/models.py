@@ -295,9 +295,10 @@ class Solicitacao(Model):
         return f"De {self.inicio} às {self.fim}, horário reservado para {self.solicitante}. {self.status}" + avaliado_por
 
     def save(self, *args, **kwargs):
-        print("AASDF", self.status, self.status == Solicitacao.Status.INDEFERIDO, self.justificativa == '')
         if self.status == Solicitacao.Status.INDEFERIDO and self.justificativa == '':
             raise ValidationError("A justificativa deve ser informada sempre que houver um indeferimento.")
+        if self.status in [Solicitacao.Status.INDEFERIDO, Solicitacao.Status.DEFERIDO]:
+            self.avaliado_em = now()
         super().save(*args, **kwargs)
         agora = localtime(now()).strftime('%d/%m/%Y às %H:%M')
         inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
@@ -326,13 +327,13 @@ class Solicitacao(Model):
                                 ' Se não foi feito por você, favor realizar outro agendamento.'),
                 },
             }
-            # send_mail(
-            #     messages[self.status][SUBJECT],
-            #     messages[self.status][TEMPLATE].format(agora=agora, inicio=inicio, justificativa=self.justificativa),
-            #     None,
-            #     [self.solicitante.email],
-            #     fail_silently=True,
-            # )
+            send_mail(
+                messages[self.status][SUBJECT],
+                messages[self.status][TEMPLATE].format(agora=agora, inicio=inicio, justificativa=self.justificativa),
+                None,
+                [self.solicitante.email],
+                fail_silently=True,
+            )
 
 
 class CriterioAvaliado(Model):
