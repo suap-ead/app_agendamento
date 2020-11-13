@@ -36,7 +36,7 @@
             {% endif %}
         {% endif %}
         <dt>Data</dt><dd>{{solicitacao.inicio}}</dd>
-        {% if solicitacao.status == solicitacao.Status.SOLICITADO or solicitacao.status == solicitacao.Status.INDEFERIDO %}
+        {% if solicitacao.status == solicitacao.Status.SOLICITADO or solicitacao.status == solicitacao.Status.DEFERIDO %}
             <br><div><a href="{% url 'agendamento:solicitacao_cancelar' solicitacao.id %}" class="btn cancelar">Cancelar esta solicitação</a></div>
         {% endif%}
         
