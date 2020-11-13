@@ -28,7 +28,7 @@ class SolicitacaoForm(ModelForm):
 
     class Meta:
         model = Solicitacao
-        fields = ['inicio']
+        fields = ['inicio', 'observacao']
         widgets = {
             'inicio': DateTimeInput(),
         }

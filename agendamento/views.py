@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from django.utils.timezone import now
 from django.conf import settings
 from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect, get_object_or_404
@@ -47,7 +48,8 @@ def agenda_selecionar(request):
 def solicitacao_cancelar(request, id):
     solicitacao = get_object_or_404(Solicitacao, id=id, solicitante=request.user)
     solicitacao.status = solicitacao.Status.CANCELADO
-    solicitacao.save(update_fields={"status"})
+    solicitacao.cancelado_em = now()
+    solicitacao.save(update_fields={"status", "cancelado_em"})
     return redirect("agendamento:index")
 
 
@@ -64,7 +66,13 @@ def agenda_ver(request, id):
     if request.method == 'POST':
         form = SolicitacaoForm(agenda, request.user, request.POST)
         inicio = datetime.fromisoformat(form.data['inicio'])
-        Solicitacao.objects.create(agenda=agenda, solicitante=request.user, inicio=inicio, fim=inicio + timedelta(minutes=agenda.janela))
+        Solicitacao.objects.create(
+            agenda=agenda,
+            solicitante=request.user,
+            inicio=inicio,
+            fim=inicio + timedelta(minutes=agenda.janela),
+            observacao=form.data['observacao']
+        )
         return redirect("agendamento:index")
     else:
         form = SolicitacaoForm(agenda, request.user)

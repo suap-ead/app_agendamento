@@ -23,7 +23,13 @@
       {% if original.avaliado_em %}
         <div><b>{{original.status}}</b> por {{original.avaliador}} em {{original.avaliado_em}} </div>
       {% else %}
-        <div>Atualmente: <b>{{original.status}}</b></div>
+        <div>
+          Atualmente: <b>{{original.status}}</b>
+          {% if original.cancelado_em %}pelo usuário em <i>{{original.cancelado_em}}</i>{% endif %}
+        </div>
+      {% endif %}
+      {% if original.observacao %}
+        <div><div>Observações do solicitante</div>{{original.observacao|linebreaks}}</div>
       {% endif %}
     </div>
     <div class="form-row field-status">

@@ -8,6 +8,7 @@
     
     <dl style="padding: 10px;">
         <dt>Agendado para</dt><dd>{{solicitacao.inicio}}</dd>
+        <dt>Suas observações</dt><dd>{{solicitacao.observacao|linebreaks}}</dd>
         <dt>Situação</dt>
         <dd><span class="status {{solicitacao.status}}">{{solicitacao.status}}:
             {% if solicitacao.status == solicitacao.Status.SOLICITADO %}

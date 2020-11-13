@@ -283,6 +283,8 @@ class Solicitacao(Model):
     avaliador = NullFK('Avaliador', get_user_model(), related_name="avaliadores")
     justificativa = TextField(_('Justificativa'), **nullable)
     avaliado_em = DateTimeField(_("Avaliado em"), **nullable)
+    cancelado_em = DateTimeField(_("Cancelado"), **nullable)
+    observacao = TextField(_("Observação"), **nullable)
 
 
     class Meta:

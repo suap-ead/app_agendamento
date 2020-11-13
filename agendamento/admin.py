@@ -241,14 +241,9 @@ class SolicitacaoAdmin(ImportExportModelAdmin):
 
     def get_exclude(self, request, obj=None):
         if obj is None:
-            return ['status', 'avaliador', 'justificativa', 'avaliado_em']
+            return ['status', 'avaliador', 'justificativa', 'avaliado_em', 'cancelado_em', 'observacao']
 
-        return ['solicitante', 'inicio', 'fim', 'agenda', 'avaliador', 'avaliado_em']
-
-    # def get_readonly_fields(self, request, obj=None):
-    #     if obj:
-    #         return []
-    #     return []
+        return ['solicitante', 'inicio', 'fim', 'agenda', 'avaliador', 'avaliado_em', 'cancelado_em', 'observacao']
 
     def get_form(self, request, obj, **kwargs):
         form = super().get_form(request, obj, **kwargs)
