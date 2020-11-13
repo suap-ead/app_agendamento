@@ -54,7 +54,7 @@
     <div class="form-row field-justificativa">
       <div>
         <label class="required" for="id_justificativa">Justificativa:</label>
-        <textarea name="justificativa" cols="40" rows="10" class="vLargeTextField" id="id_justificativa" required>{{original.justificativa}}</textarea>
+        <textarea name="justificativa" cols="40" rows="10" class="vLargeTextField" id="id_justificativa" required>{{original.justificativa|default_if_none:""}}</textarea>
         {{ form.justificativa.errors }}
         <div class="help">Sempre preencha este campo.</div>
       </div>
