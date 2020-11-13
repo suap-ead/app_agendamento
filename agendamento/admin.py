@@ -235,7 +235,11 @@ class SolicitacaoAdmin(ImportExportModelAdmin):
     list_filter = [
         'status', 'solicitante__tipo', 'solicitante__categoria', 'agenda__nome', 'solicitante__codigo_curso'
     ]
-    search_fields = ['solicitante', 'avaliador', 'status', 'justificativa']
+    search_fields = [
+        'solicitante__username', 'solicitante__name', 'solicitante__social_name', 'solicitante__email',
+        'avaliador__username', 'avaliador__name', 'avaliador__social_name', 'avaliador__email',
+        'justificativa'
+    ]
     date_hierarchy = 'inicio'
     autocomplete_fields = ['agenda', 'solicitante']
 
