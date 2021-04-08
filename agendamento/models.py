@@ -302,44 +302,28 @@ class Solicitacao(Model):
         if self.status in [Solicitacao.Status.INDEFERIDO, Solicitacao.Status.DEFERIDO]:
             self.avaliado_em = now()
         super().save(*args, **kwargs)
-        agora = localtime(now()).strftime('%d/%m/%Y às %H:%M')
         
         if self.solicitante.email is not None and self.solicitante.email != '':
             if Solicitacao.Status.SOLICITADO:
+                subject = _("Solicitação de agendamento")
+                agora = localtime(now()).strftime('%d/%m/%Y às %H:%M')
                 inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
-            else:
+                template = _(f'Você está recebendo esta mensagem pois em {agora} você SOLICITOU um agendamento para {inicio}. Lembre-se de chegar uns 15 minutos antes.')
+            elif Solicitacao.Status.DEFERIDO:
                 inicio = localtime(self.inicio).strftime('%d/%m/%Y às %H:%M')
-            SUBJECT = 'subject'
-            TEMPLATE = 'template'
-            messages = {
-                Solicitacao.Status.SOLICITADO: {
-                    SUBJECT: _("Solicitação de agendamento"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois em {agora} você SOLICITOU um agendamento para {inicio}.'
-                                ' Lembre-se de chegar uns 15 minutos antes.'),
-                },
-                Solicitacao.Status.DEFERIDO: {
-                    SUBJECT: _("Agendamento aprovado"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois seu agendamento para **{inicio}** foi APROVADO.'
-                                ' Lembre-se de chegar uns 15 minutos antes.'),
-                },
-                Solicitacao.Status.INDEFERIDO: {
-                    SUBJECT: _("Agendamento negado"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois seu agendamento para {inicio} foi NEGADO.'
-                                'O motivo foi: "{justificativa}".'),
-                },
-                Solicitacao.Status.CANCELADO: {
-                    SUBJECT: _("Agendamento cancelado"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois seu agendamento para {inicio} foi CANCELADO.'
-                                ' Se não foi feito por você, favor realizar outro agendamento.'),
-                },
-            }
-            send_mail(
-                messages[self.status][SUBJECT],
-                messages[self.status][TEMPLATE].format(agora=agora, inicio=inicio, justificativa=self.justificativa),
-                None,
-                [self.solicitante.email],
-                fail_silently=True,
-            )
+                subject = _("Agendamento aprovado")
+                template = _(f'Você está recebendo esta mensagem pois seu agendamento para **{inicio}** foi APROVADO. Lembre-se de chegar uns 15 minutos antes.')
+            elif Solicitacao.Status.INDEFERIDO:
+                inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
+                subject = _("Agendamento negado")
+                template = _(f'Você está recebendo esta mensagem pois seu agendamento para {inicio} foi NEGADO. O motivo foi: "{self.justificativa}".')
+            elif Solicitacao.Status.CANCELADO:
+                inicio = localtime(self.inicio).strftime('%d/%m/%Y às %H:%M')
+                subject = _("Agendamento cancelado")
+                template = _(f'Você está recebendo esta mensagem pois seu agendamento para {inicio} foi CANCELADO. Se não foi feito por você, favor realizar outro agendamento.')
+            else:
+                raise ValidationError("Status inválido")
+            send_mail(subject, template, None, [self.solicitante.email], fail_silently=True)
 
 
 class CriterioAvaliado(Model):
