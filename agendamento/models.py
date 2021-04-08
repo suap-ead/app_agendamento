@@ -304,20 +304,20 @@ class Solicitacao(Model):
         super().save(*args, **kwargs)
         
         if self.solicitante.email is not None and self.solicitante.email != '':
-            if Solicitacao.Status.SOLICITADO:
+            if self.status == Solicitacao.Status.SOLICITADO:
                 subject = _("Solicitação de agendamento")
                 agora = localtime(now()).strftime('%d/%m/%Y às %H:%M')
                 inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
                 template = _(f'Você está recebendo esta mensagem pois em {agora} você SOLICITOU um agendamento para {inicio}. Lembre-se de chegar uns 15 minutos antes.')
-            elif Solicitacao.Status.DEFERIDO:
+            elif self.status == Solicitacao.Status.DEFERIDO:
                 inicio = localtime(self.inicio).strftime('%d/%m/%Y às %H:%M')
                 subject = _("Agendamento aprovado")
-                template = _(f'Você está recebendo esta mensagem pois seu agendamento para **{inicio}** foi APROVADO. Lembre-se de chegar uns 15 minutos antes.')
-            elif Solicitacao.Status.INDEFERIDO:
+                template = _(f'Você está recebendo esta mensagem pois seu agendamento para {inicio} foi APROVADO. Lembre-se de chegar uns 15 minutos antes.')
+            elif self.status == Solicitacao.Status.INDEFERIDO:
                 inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
                 subject = _("Agendamento negado")
                 template = _(f'Você está recebendo esta mensagem pois seu agendamento para {inicio} foi NEGADO. O motivo foi: "{self.justificativa}".')
-            elif Solicitacao.Status.CANCELADO:
+            elif self.status == Solicitacao.Status.CANCELADO:
                 inicio = localtime(self.inicio).strftime('%d/%m/%Y às %H:%M')
                 subject = _("Agendamento cancelado")
                 template = _(f'Você está recebendo esta mensagem pois seu agendamento para {inicio} foi CANCELADO. Se não foi feito por você, favor realizar outro agendamento.')
