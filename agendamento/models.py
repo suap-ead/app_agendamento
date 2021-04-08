@@ -319,17 +319,17 @@ class Solicitacao(Model):
                 },
                 Solicitacao.Status.DEFERIDO: {
                     SUBJECT: _("Agendamento aprovado"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois em {agora} seu agendamento para {inicio} foi APROVADO.'
+                    TEMPLATE: _('Você está recebendo esta mensagem pois seu agendamento para **{inicio}** foi APROVADO.'
                                 ' Lembre-se de chegar uns 15 minutos antes.'),
                 },
                 Solicitacao.Status.INDEFERIDO: {
                     SUBJECT: _("Agendamento negado"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois em {agora} seu agendamento para {inicio} foi NEGADO'
-                                ' pelo seguinte motivo: {justificativa}.'),
+                    TEMPLATE: _('Você está recebendo esta mensagem pois seu agendamento para {inicio} foi NEGADO.'
+                                'O motivo foi: "{justificativa}".'),
                 },
                 Solicitacao.Status.CANCELADO: {
                     SUBJECT: _("Agendamento cancelado"),
-                    TEMPLATE: _('Você está recebendo esta mensagem pois em {agora} seu agendamento para {inicio} foi CANCELADO.'
+                    TEMPLATE: _('Você está recebendo esta mensagem pois seu agendamento para {inicio} foi CANCELADO.'
                                 ' Se não foi feito por você, favor realizar outro agendamento.'),
                 },
             }
