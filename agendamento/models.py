@@ -303,8 +303,12 @@ class Solicitacao(Model):
             self.avaliado_em = now()
         super().save(*args, **kwargs)
         agora = localtime(now()).strftime('%d/%m/%Y às %H:%M')
-        inicio = localtime(self.inicio).strftime('%d/%m/%Y às %H:%M')
+        
         if self.solicitante.email is not None and self.solicitante.email != '':
+            if Solicitacao.Status.SOLICITADO:
+                inicio = self.inicio.strftime('%d/%m/%Y às %H:%M')
+            else:
+                inicio = localtime(self.inicio).strftime('%d/%m/%Y às %H:%M')
             SUBJECT = 'subject'
             TEMPLATE = 'template'
             messages = {
